@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Projekt odpływu na wymiar</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+        select, input[type="number"], button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .visualization {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pipe {
+            position: relative;
+            width: 300px;
+            height: 20px;
+            background-color: #dcdcdc;
+            margin: 20px auto;
+        }
+        .pipe-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: black;
+        }
+        .pipe-vertical-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: black;
+        }
+        .siphon {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #007bff;
+            border-radius: 4px;
+            top: 20px;
+            transition: left 0.3s ease;
+        }
+        .error {
+            color: red;
+        }
+        .price {
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #indexText {
+            font-size: 12px;
+            font-weight: normal;
+        }
+        #indexResult {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .indexWrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .price {
+            font-size: 24px;
+            color: #e74c3c;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Responsywność na urządzenia mobilne */
+        @media screen and (max-width: 600px) {
+            .container {
+                padding: 15px;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            form {
+                gap: 12px;
+            }
+
+            label, select, input[type="number"], button {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .visualization {
+                margin-top: 15px;
+            }
+
+            .pipe {
+                width: 100%;
+            }
+
+            .pipe-line, .pipe-vertical-line {
+                height: 1px;
+            }
+
+            .siphon {
+                width: 16px;
+                height: 16px;
+                top: 16px;
+            }
+
+            .price {
+                font-size: 20px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Projekt odpływu na wymiar</h1>
+
+        <form id="indexForm">
+            <label for="option">Wybierz model:</label>
+            <select id="option" name="option" onchange="updateLengthRange()">
+                <option value="O">Odpływ klasyczny</option>
+                <option value="O.BLACK">Odpływ klasyczny czarny</option>
+                <option value="O.GOLD">Odpływ klasyczny złoty PVD</option>
+                <option value="OW">Odpływ przyścienny</option>
+                <option value="OW.BLACK">Odpływ przyścienny czarny</option>              
+                <option value="OW.GOLD">Odpływ przyścienny złoty PVD</option>
+                <option value="OWL">Odpływ przyścienny + ściana lewa</option> 
+                <option value="OWP">Odpływ przyścienny + ściana prawa</option>
+                <option value="OWLP">Odpływ przyścienny + ściana lewa i prawa</option>
+            </select>
+
+            <label for="length">Długość odpływu (L) w cm:</label>
+            <input type="number" id="length" name="length" required oninput="validateLength()">
+
+            <label for="referenceEdge">Przesunięcie pierwszego syfonu od:</label>
+            <select id="referenceEdge" name="referenceEdge" onchange="updateMaxShift()">
+                <option value="none">Brak przesunięcia</option>
+                <option value="left">Lewej krawędzi</option>
+                <option value="right">Prawej krawędzi</option>
+            </select>
+
+            <label for="shift">Wartość przesunięcia w cm:</label>
+            <input type="number" id="shift" name="shift" required disabled>
+
+<label for="addSecondSiphon">Dodaj drugi syfon
+<input type="checkbox" id="addSecondSiphon" name="addSecondSiphon" onchange="toggleSecondSiphonFields()">
+</label>
+
+<label for="referenceEdge2" id="referenceEdge2Label" style="display:none;">Przesunięcie kolejnego syfonu od:</label>
+<select id="referenceEdge2" name="referenceEdge2" onchange="updateMaxShift2()" style="display:none;">
+    <option value="none">Brak syfonu</option>
+    <option value="left">Lewej krawędzi</option>
+    <option value="right">Prawej krawędzi</option>
+</select>
+
+<label for="shift2" id="shift2Label" style="display:none;">Wartość przesunięcia w cm:</label>
+<input type="number" id="shift2" name="shift2" required disabled style="display:none;">
+
+
+<label for="addThirdSiphon">Dodaj trzeci syfon
+    <input type="checkbox" id="addThirdSiphon" name="addThirdSiphon" onchange="toggleThirdSiphonFields()">
+</label>
+
+<label for="referenceEdge3" id="referenceEdge3Label" style="display:none;">Przesunięcie kolejnego syfonu od:</label>
+<select id="referenceEdge3" name="referenceEdge3" onchange="updateMaxShift3()" style="display:none;">
+    <option value="none">Brak syfonu</option>
+    <option value="left">Lewej krawędzi</option>
+    <option value="right">Prawej krawędzi</option>
+</select>
+
+<label for="shift3" id="shift3Label" style="display:none;">Wartość przesunięcia w cm:</label>
+<input type="number" id="shift3" name="shift3" required disabled style="display:none;">
+
+
+
+
+        <p id="error" class="error"></p>
+            <button type="button" id="calculateButton" onclick="calculateProject()" disabled>Załaduj projekt</button>
+        </form>
+
+        <div class="visualization">
+            <div class="pipe" id="pipe">
+                <div class="siphon" id="siphon"></div>
+            </div>
+            <p id="visualizationText"></p>
+        </div>
+
+        <p id="price" class="price">Cena brutto: -</p>
+
+        <div class="indexWrapper">
+            <p id="indexText">Index:</p>
+            <p id="indexResult">Wprowadź dane i kliknij 'Załaduj projekt'</p>
+        </div>
+
+    </div>
+
+    <script>
+        let isDragging = false;
+
+        function updateLengthRange() {
+            const option = document.getElementById('option').value;
+            const lengthInput = document.getElementById('length');
+            
+            let maxLength = 600; 
+            
+            if (option === 'OW' || option === 'O.BLACK' || option === 'OW.BLACK' || option === 'OWL' || option === 'OWP' || option === 'OWLP') {
+                maxLength = 195; 
+            } else if (option === 'O.GOLD') {
+                maxLength = 120; 
+            } else if (option === 'OW.GOLD') {
+                maxLength = 150;  // Długość maksymalna dla modelu "OW.GOLD"
+            }
+            
+            lengthInput.max = maxLength;
+            lengthInput.placeholder = `Min: 50 cm, Max: ${maxLength} cm`;
+
+            lengthInput.value = '';
+            document.getElementById('shift').disabled = true;
+            document.getElementById('calculateButton').disabled = true;
+            document.getElementById('error').innerText = '';
+            document.getElementById('price').innerText = 'Cena brutto: -'; 
+        }
+
+        function validateLength() {
+            const length = document.getElementById('length').value;
+            const option = document.getElementById('option').value;
+            const errorMessage = document.getElementById('error');
+            
+            let maxLength = 600;
+            if (option === 'OW' || option === 'O.BLACK' || option === 'OW.BLACK' || option === 'OWL' || option === 'OWP' || option === 'OWLP') {
+                maxLength = 195;
+            } else if (option === 'O.GOLD') {
+                maxLength = 120;
+            } else if (option === 'OW.GOLD') {
+                maxLength = 150; // Długość maksymalna dla modelu "OW.GOLD"
+            }
+
+            if (length < 50 || length > maxLength) {
+                errorMessage.innerText = `Długość musi być pomiędzy 50 a ${maxLength} cm.`;
+                document.getElementById('shift').disabled = true;  
+                document.getElementById('calculateButton').disabled = true; 
+                return false;
+            } else {
+                errorMessage.innerText = '';
+                document.getElementById('shift').disabled = false;
+                document.getElementById('calculateButton').disabled = false;
+                updateMaxShift();
+                return true;
+            }
+        }
+
+function toggleSecondSiphonFields() {
+    const addSecondSiphonCheckbox = document.getElementById('addSecondSiphon');
+    const referenceEdge2Select = document.getElementById('referenceEdge2');
+    const shift2Input = document.getElementById('shift2');
+    const referenceEdge2Label = document.getElementById('referenceEdge2Label');
+    const shift2Label = document.getElementById('shift2Label');
+    
+    if (addSecondSiphonCheckbox.checked) {
+        // Pokazuje pola dla drugiego syfonu
+        referenceEdge2Label.style.display = 'block';
+        referenceEdge2Select.style.display = 'block';
+        shift2Label.style.display = 'block';
+        shift2Input.style.display = 'block';
+        referenceEdge2Select.disabled = false;  // Aktywuj wybór dla drugiego syfonu
+        shift2Input.disabled = false;           // Aktywuj pole dla wartości przesunięcia
+    } else {
+        // Ukrywa pola dla drugiego syfonu
+        referenceEdge2Label.style.display = 'none';
+        referenceEdge2Select.style.display = 'none';
+        shift2Label.style.display = 'none';
+        shift2Input.style.display = 'none';
+        referenceEdge2Select.disabled = true;   // Dezaktywuj wybór dla drugiego syfonu
+        shift2Input.disabled = true;            // Dezaktywuj pole dla wartości przesunięcia
+        referenceEdge2Select.value = 'none';    // Zresetuj wybór dla drugiego syfonu
+        shift2Input.value = '';                 // Zresetuj wartość przesunięcia drugiego syfonu
+    }
+}
+
+function toggleThirdSiphonFields() {
+    const addThirdSiphonCheckbox = document.getElementById('addThirdSiphon');
+    const referenceEdge3Select = document.getElementById('referenceEdge3');
+    const shift3Input = document.getElementById('shift3');
+    const referenceEdge3Label = document.getElementById('referenceEdge3Label');
+    const shift3Label = document.getElementById('shift3Label');
+    
+    if (addThirdSiphonCheckbox.checked) {
+        // Pokazuje pola dla trzeciego syfonu
+        referenceEdge3Label.style.display = 'block';
+        referenceEdge3Select.style.display = 'block';
+        shift3Label.style.display = 'block';
+        shift3Input.style.display = 'block';
+        referenceEdge3Select.disabled = false;  // Aktywuj wybór dla trzeciego syfonu
+        shift3Input.disabled = false;           // Aktywuj pole dla wartości przesunięcia
+    } else {
+        // Ukrywa pola dla trzeciego syfonu
+        referenceEdge3Label.style.display = 'none';
+        referenceEdge3Select.style.display = 'none';
+        shift3Label.style.display = 'none';
+        shift3Input.style.display = 'none';
+        referenceEdge3Select.disabled = true;   // Dezaktywuj wybór dla trzeciego syfonu
+        shift3Input.disabled = true;            // Dezaktywuj pole dla wartości przesunięcia
+        referenceEdge3Select.value = 'none';    // Zresetuj wybór dla trzeciego syfonu
+        shift3Input.value = '';                 // Zresetuj wartość przesunięcia trzeciego syfonu
+    }
+}
+
+
+
+
+function updateMaxShift() {
+    const length = document.getElementById('length').value;
+    const referenceEdge = document.getElementById('referenceEdge').value;
+    const shiftInput = document.getElementById('shift');
+    
+    if (referenceEdge === 'none') {
+        shiftInput.disabled = true;
+        shiftInput.value = '';
+    } else {
+        shiftInput.disabled = false;
+        const maxShift = Math.max(length - 12, 12); 
+        shiftInput.max = maxShift;
+        shiftInput.min = 12;
+        shiftInput.placeholder = `Min: 12 cm, Max: ${maxShift} cm`;
+    }
+    updateMaxShift2();  // Zaktualizuj również parametr dla drugiego ć
+}
+
+function updateMaxShift2() {
+    const length = document.getElementById('length').value;
+    const referenceEdge2 = document.getElementById('referenceEdge2').value;
+    const shiftInput2 = document.getElementById('shift2');
+    
+    if (referenceEdge2 === 'none') {
+        shiftInput2.disabled = true;
+        shiftInput2.value = '';
+    } else {
+        shiftInput2.disabled = false;
+        const maxShift2 = Math.max(length - 12, 12); 
+        shiftInput2.max = maxShift2;
+        shiftInput2.min = 12;
+        shiftInput2.placeholder = `Min: 12 cm, Max: ${maxShift2} cm`;
+    }
+   updateMaxShift3();
+}
+
+
+function updateMaxShift3() {
+    const length = document.getElementById('length').value;
+    const referenceEdge3 = document.getElementById('referenceEdge3').value;
+    const shiftInput3 = document.getElementById('shift3');
+    
+    if (referenceEdge3 === 'none') {
+        shiftInput3.disabled = true;
+        shiftInput3.value = '';
+    } else {
+        shiftInput3.disabled = false;
+        const maxShift3 = Math.max(length - 12, 12); 
+        shiftInput3.max = maxShift3;
+        shiftInput3.min = 12;
+        shiftInput3.placeholder = `Min: 12 cm, Max: ${maxShift3} cm`;
+    }
+}
+
+
+
+function calculateProject() {
+    const option = document.getElementById('option').value;
+    let length = document.getElementById('length').value;
+    const referenceEdge = document.getElementById('referenceEdge').value;
+    let shift = document.getElementById('shift').value;
+    const referenceEdge2 = document.getElementById('referenceEdge2').value;
+    let shift2 = document.getElementById('shift2').value;
+    const referenceEdge3 = document.getElementById('referenceEdge3').value;
+    let shift3 = document.getElementById('shift3').value;
+    const maxShift = length - 12;
+    const maxShift2 = length - 12;
+    const maxShift3 = length - 12;
+
+    // Funkcja do kasowania indeksu i ceny w przypadku błędu
+    function clearResults() {
+        document.getElementById('indexResult').innerHTML = '';
+        document.getElementById('price').innerText = '';
+    }
+
+    // Funkcja do ustawiania błędu
+    function setError(message) {
+        document.getElementById('error').innerText = message;
+        clearResults();  // Kasujemy wyniki
+    }
+
+
+// Walidacja pierwszego syfonu (pozycja none odpowiada centralnej pozycji)
+if (referenceEdge === 'none') {
+    shift = length / 2; // Ustawiamy syfon w środkowej pozycji
+} else if (shift === '' || shift < 12 || shift > maxShift) {
+    setError(`Wartość przesunięcia pierwszego syfonu musi być pomiędzy 12 a ${maxShift} cm.`);
+    return;
+} else {
+    document.getElementById('error').innerText = '';
+}
+
+// Jeżeli pierwszy syfon jest ustawiony na 'none', blokujemy ustawienie innych syfonów w tej samej pozycji
+if (shift === 'none') {
+    // Sprawdzamy, czy drugi syfon nie jest ustawiony w tej samej pozycji co pierwszy
+    if (referenceEdge2 !== 'none' && shift2 === length / 2) {
+        setError("Drugi syfon nie może być ustawiony w tej samej pozycji co pierwszy.");
+        return;
+    }
+
+    // Sprawdzamy, czy trzeci syfon nie jest ustawiony w tej samej pozycji co pierwszy
+    if (referenceEdge3 !== 'none' && shift3 === length / 2) {
+        setError("Trzeci syfon nie może być ustawiony w tej samej pozycji co pierwszy.");
+        return;
+    }
+}
+
+// Walidacja drugiego syfonu
+if (referenceEdge2 !== 'none') {
+    if (shift2 === '' || shift2 > maxShift2 || shift2 < 12) {
+        setError(`Wartość przesunięcia drugiego syfonu musi być pomiędzy 12 a ${maxShift2} cm.`);
+        return;
+    }
+
+    // Sprawdzamy odległość między syfonami w zależności od ich pozycji (lewa/prawa)
+    let distance = 22;
+    if (referenceEdge === referenceEdge2) {
+        distance = Math.abs(shift - shift2);
+    } else if (referenceEdge === 'left' && referenceEdge2 === 'right') {
+        distance = length - shift - shift2;
+    } else if (referenceEdge === 'right' && referenceEdge2 === 'left') {
+        distance = length - shift - shift2;
+    }
+
+    // Sprawdzamy, czy drugi syfon nie jest zbyt blisko pierwszego
+    if (distance < 22) {
+        setError("Odstęp między pierwszym a drugim syfonem musi wynosić co najmniej 22 cm.");
+        return;
+    }
+} else {
+    document.getElementById('error').innerText = '';
+}
+
+// Walidacja trzeciego syfonu
+if (referenceEdge3 !== 'none') {
+    if (shift3 === '' || shift3 > maxShift3 || shift3 < 12) {
+        setError(`Wartość przesunięcia trzeciego syfonu musi być pomiędzy 12 a ${maxShift3} cm.`);
+        return;
+    }
+
+    // Sprawdzamy odległość między syfonami
+    let distance = 22;
+    if (referenceEdge === referenceEdge3) {
+        distance = Math.abs(shift - shift3);
+    } else if (referenceEdge === 'left' && referenceEdge3 === 'right') {
+        distance = length - shift - shift3;
+    } else if (referenceEdge === 'right' && referenceEdge3 === 'left') {
+        distance = length - shift - shift3;
+    }
+
+    // Sprawdzamy, czy trzeci syfon nie jest zbyt blisko pierwszego
+    if (distance < 22) {
+        setError("Odstęp między pierwszym a trzecim syfonem musi wynosić co najmniej 22 cm.");
+        return;
+    }
+
+    // Sprawdzamy, czy trzeci syfon nie jest zbyt blisko drugiego
+    if (referenceEdge2 !== 'none') {
+        let distance2 = 0;
+        if (referenceEdge2 === referenceEdge3) {
+            distance2 = Math.abs(shift2 - shift3);
+        } else if (referenceEdge2 === 'left' && referenceEdge3 === 'right') {
+            distance2 = length - shift2 - shift3;
+        } else if (referenceEdge2 === 'right' && referenceEdge3 === 'left') {
+            distance2 = length - shift2 - shift3;
+        }
+
+        if (distance2 < 22) {
+            setError("Odstęp między drugim a trzecim syfonem musi wynosić co najmniej 22 cm.");
+            return;
+        }
+    }
+} else {
+    document.getElementById('error').innerText = '';
+}
+
+
+// Jeżeli pierwszy syfon jest ustawiony w centralnej pozycji (none)
+if (referenceEdge === 'none' ) {
+    // Sprawdzamy, czy drugi syfon nie jest w odległości 22 cm od środka
+    if (shift2 > (length / 2 - 22) && shift2 < (length / 2 + 22)) {
+        setError("Odstęp między pierwszym a drugim syfonem musi wynosić co najmniej 22 cm.");
+        return;
+    }
+
+    // Sprawdzamy, czy trzeci syfon nie jest w odległości 22 cm od środka
+    if (shift3 > (length / 2 - 22) && shift3 < (length / 2 + 22)) {
+        setError("Odstęp między pierwszym a trzecim syfonem musi wynosić co najmniej 22 cm.");
+        return;
+    }
+}
+
+
+// Sprawdzanie minimalnego odstępu między aktywnymi syfonami
+const shifts = [];
+if (referenceEdge !== 'none') shifts.push({ shift, referenceEdge });
+if (referenceEdge2 !== 'none') shifts.push({ shift: shift2, referenceEdge: referenceEdge2 });
+if (referenceEdge3 !== 'none') shifts.push({ shift: shift3, referenceEdge: referenceEdge3 });
+
+// Walidacja odległości między syfonami
+for (let i = 0; i < shifts.length; i++) {
+    for (let j = i + 1; j < shifts.length; j++) {
+        let siphonDistance = 0;
+        if (shifts[i].referenceEdge === shifts[j].referenceEdge) {
+            siphonDistance = Math.abs(shifts[i].shift - shifts[j].shift);
+        } else if ((shifts[i].referenceEdge === 'left' && shifts[j].referenceEdge === 'right') || 
+                   (shifts[i].referenceEdge === 'right' && shifts[j].referenceEdge === 'left')) {
+            siphonDistance = length - shifts[i].shift - shifts[j].shift;
+        }
+
+        if (siphonDistance < 22) {
+            setError(`Odstęp między syfonami ${i + 1} i ${j + 1} musi wynosić co najmniej 22 cm.`);
+            return; // Zatrzymujemy dalsze obliczenia, jeśli odległość jest za mała
+        } else {
+            document.getElementById('error').innerText = '';
+        }
+    }
+}
+
+
+
+    // Usuwamy poprzednie syfony z wizualizacji
+    const pipe = document.getElementById('pipe');
+    const existingSiphons = document.querySelectorAll('.siphon');
+    existingSiphons.forEach(siphon => siphon.remove()); // Usuwamy wszystkie poprzednie syfony
+    const existingLines = document.querySelectorAll('.pipe-line');
+    existingLines.forEach(line => line.remove()); // Usuwamy wszystkie poprzednie linie
+    const existingVerticalLines = document.querySelectorAll('.pipe-vertical-line');
+    existingVerticalLines.forEach(line => line.remove()); // Usuwamy wszystkie poprzednie pionowe linie
+
+    // Dodajemy czarną linię na górnej krawędzi w przypadku odpowiednich modeli
+    if (['OW', 'OW.BLACK', 'OW.GOLD', 'OWL', 'OWP', 'OWLP'].includes(option)) {
+        const pipeLine = document.createElement('div');
+        pipeLine.classList.add('pipe-line');
+        pipe.appendChild(pipeLine);
+    }
+
+    // Dodajemy pionowe linie dla OWL, OWP, OWLP
+    if (option === 'OWL' || option === 'OWLP') {
+        const leftVerticalLine = document.createElement('div');
+        leftVerticalLine.classList.add('pipe-vertical-line');
+        leftVerticalLine.style.left = '0'; // Lewej krawędzi
+        pipe.appendChild(leftVerticalLine);
+    }
+    if (option === 'OWP' || option === 'OWLP') {
+        const rightVerticalLine = document.createElement('div');
+        rightVerticalLine.classList.add('pipe-vertical-line');
+        rightVerticalLine.style.right = '0'; // Prawej krawędzi
+        pipe.appendChild(rightVerticalLine);
+    }
+
+    length = parseFloat(length) * 10;
+    shift = parseFloat(shift) * 10;
+
+    // Dodajemy pierwszy syfon
+    let calculatedShift;
+
+    if (referenceEdge === 'left') {
+        calculatedShift = shift;
+    } else if (referenceEdge === 'right') {
+        calculatedShift = length - shift;
+    } else {
+        calculatedShift = length / 2;
+    }
+    let index = option + "<span style='color: red;'>" + (length) + "</span>" + " S" + "<span style='color: magenta;'>" + (calculatedShift) + "</span>";
+
+    // Dodajemy pierwszy syfon
+    const siphon = document.createElement('div');
+    siphon.classList.add('siphon');
+    pipe.appendChild(siphon);
+
+    let position;
+
+    if (referenceEdge === 'left') {
+        position = (shift / length) * 300;
+    } else if (referenceEdge === 'right') {
+        position = 300 - (shift / length) * 300 - 20;
+    } else {
+        position = (length / 2) / length * 300 - 10;
+    }
+
+    siphon.style.left = (position - 5) + 'px';
+    siphon.style.display = 'block';
+
+    // Dodajemy drugi syfon
+    let calculatedShift2;
+    let siphon2;
+    if (referenceEdge2 !== 'none') {
+        // Dodajemy drugi syfon, jeśli jest wymagany
+        shift2 = parseFloat(shift2) * 10;
+        if (referenceEdge2 === 'left') {
+            calculatedShift2 = shift2;
+        } else if (referenceEdge2 === 'right') {
+            calculatedShift2 = length - shift2;
+        } else {
+            calculatedShift2 = length / 2;
+        }
+        index += " S" + "<span style='color: magenta;'>" + (calculatedShift2) + "</span>";
+
+        // Dodajemy drugi syfon tylko jeśli jest wymagany
+        siphon2 = document.createElement('div');
+        siphon2.classList.add('siphon');
+        pipe.appendChild(siphon2);
+
+        let position2;
+        if (referenceEdge2 === 'left') {
+            position2 = (shift2 / length) * 300;
+        } else if (referenceEdge2 === 'right') {
+            position2 = 300 - (shift2 / length) * 300 - 20;
+        } else {
+            position2 = (length / 2) / length * 300 - 10;
+        }
+
+        siphon2.style.left = (position2 - 5) + 'px';
+        siphon2.style.display = 'block';
+    }
+
+    // Dodajemy trzeci syfon
+    let calculatedShift3;
+    let siphon3;
+    if (referenceEdge3 !== 'none') {
+        // Dodajemy trzeci syfon, jeśli jest wymagany
+        shift3 = parseFloat(shift3) * 10;
+        if (referenceEdge3 === 'left') {
+            calculatedShift3 = shift3;
+        } else if (referenceEdge3 === 'right') {
+            calculatedShift3 = length - shift3;
+        } else {
+            calculatedShift3 = length / 2;
+        }
+        index += " S" + "<span style='color: magenta;'>" + (calculatedShift3) + "</span>";
+
+        // Dodajemy trzeci syfon tylko jeśli jest wymagany
+        siphon3 = document.createElement('div');
+        siphon3.classList.add('siphon');
+        pipe.appendChild(siphon3);
+
+        let position3;
+        if (referenceEdge3 === 'left') {
+            position3 = (shift3 / length) * 300;
+        } else if (referenceEdge3 === 'right') {
+            position3 = 300 - (shift3 / length) * 300 - 20;
+        } else {
+            position3 = (length / 2) / length * 300 - 10;
+        }
+
+        siphon3.style.left = (position3 - 5) + 'px';
+        siphon3.style.display = 'block';
+    }
+
+    document.getElementById('indexResult').innerHTML = index;
+
+    const visualizationText = document.getElementById('visualizationText');
+    visualizationText.innerText = `Długość odpływu: ${length / 10} cm, Pozycja syfonu 1: ${calculatedShift / 10} cm`;
+    if (referenceEdge2 !== 'none') {
+        visualizationText.innerText += `, Pozycja syfonu 2: ${calculatedShift2 / 10} cm`;
+    }
+    if (referenceEdge3 !== 'none') {
+        visualizationText.innerText += `, Pozycja syfonu 3: ${calculatedShift3 / 10} cm`;
+    }
+
+    let pricePer100cm;
+    switch(option) {
+        case 'O':
+            pricePer100cm = 900;
+            break;
+        case 'OW':
+        case 'O.BLACK':
+            pricePer100cm = 1100;
+            break;
+        case 'OW.BLACK':
+            pricePer100cm = 1200;
+            break;
+        case 'O.GOLD':
+            pricePer100cm = 1300;
+            break;
+        case 'OW.GOLD':
+            pricePer100cm = 1500;
+            break;
+        case 'OWL':
+            pricePer100cm = 1100;
+            break;
+        case 'OWP':
+            pricePer100cm = 1100;
+            break;
+        case 'OWLP':
+            pricePer100cm = 1100;
+            break;
+    }
+
+    let price = (length / 1000) * pricePer100cm;
+    if (price < 900) {
+        price = 900;
+    }
+
+    document.getElementById('price').innerText = 'Cena brutto: ' + price.toFixed(2) + ' PLN';
+}
+
+
+    
+   </script>
+</body>
+</html>
