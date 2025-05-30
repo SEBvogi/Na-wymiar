@@ -756,6 +756,29 @@ for (let i = 0; i < shifts.length; i++) {
 
     document.getElementById('price').innerText = 'Cena brutto: ' + price.toFixed(2) + ' PLN';
 }
+// Funkcja do kopiowania tekstu do schowka
+function copyToClipboard() {
+    const indexElement = document.getElementById('indexResult');
+    
+    if (indexElement) {
+        // Tworzymy tymczasowy element input, żeby skopiować tekst
+        const tempInput = document.createElement('input');
+        tempInput.value = indexElement.innerText;  // Używamy innerText, aby pobrać tylko tekst, nie HTML
+        document.body.appendChild(tempInput);
+        tempInput.select();  // Zaznaczamy tekst
+        document.execCommand('copy');  // Kopiujemy do schowka
+        document.body.removeChild(tempInput);  // Usuwamy tymczasowy element
+        alert('Indeks został skopiowany do schowka!');  // Opcjonalnie wyświetlamy komunikat
+    }
+}
+
+// Dodajemy nasłuchiwacz zdarzenia na kliknięcie
+document.addEventListener('DOMContentLoaded', function() {
+    const indexElement = document.getElementById('indexResult');
+    if (indexElement) {
+        indexElement.addEventListener('click', copyToClipboard);  // Kliknięcie powoduje kopiowanie
+    }
+});
 
 
     
