@@ -761,14 +761,17 @@ function copyToClipboard() {
     const indexElement = document.getElementById('indexResult');
     
     if (indexElement) {
-        // Tworzymy tymczasowy element input, żeby skopiować tekst
         const tempInput = document.createElement('input');
-        tempInput.value = indexElement.innerText;  // Używamy innerText, aby pobrać tylko tekst, nie HTML
+        tempInput.value = indexElement.innerText;
         document.body.appendChild(tempInput);
-        tempInput.select();  // Zaznaczamy tekst
-        document.execCommand('copy');  // Kopiujemy do schowka
-        document.body.removeChild(tempInput);  // Usuwamy tymczasowy element
-        alert('Indeks został skopiowany do schowka!');  // Opcjonalnie wyświetlamy komunikat
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        // Pytanie użytkownika o dalsze działanie
+        const exit = confirm('Indeks został skopiowany do schowka!\n\nKliknij OK, aby zamknąć tę kartę i powrócić do tabeli,\nlub Anuluj, aby pozostać na stronie.');
+        if (exit) {
+            window.close(); // Próba zamknięcia karty
+        }
     }
 }
 
@@ -776,9 +779,10 @@ function copyToClipboard() {
 document.addEventListener('DOMContentLoaded', function() {
     const indexElement = document.getElementById('indexResult');
     if (indexElement) {
-        indexElement.addEventListener('click', copyToClipboard);  // Kliknięcie powoduje kopiowanie
+        indexElement.addEventListener('click', copyToClipboard);
     }
 });
+
 
 
     
