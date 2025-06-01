@@ -168,17 +168,51 @@
 
         <form id="indexForm">
             <label for="option">Wybierz model:</label>
-            <select id="option" name="option" onchange="updateLengthRange()">
-                <option value="O">Odpływ klasyczny</option>
-                <option value="O.BLACK">Odpływ klasyczny czarny</option>
-                <option value="O.GOLD">Odpływ klasyczny złoty PVD</option>
-                <option value="OW">Odpływ przyścienny</option>
-                <option value="OW.BLACK">Odpływ przyścienny czarny</option>              
-                <option value="OW.GOLD">Odpływ przyścienny złoty PVD</option>
-                <option value="OWL">Odpływ przyścienny + ściana lewa</option> 
-                <option value="OWP">Odpływ przyścienny + ściana prawa</option>
-                <option value="OWLP">Odpływ przyścienny + ściana lewa i prawa</option>
-            </select>
+<select id="option" name="option" onchange="updateLengthRange()">
+    <option value="O">Odpływ klasyczny</option>
+    <option value="OW">Odpływ przyścienny</option>
+    <option value="OWL">Odpływ przyścienny + ściana lewa</option>
+    <option value="OWP">Odpływ przyścienny + ściana prawa</option>
+    <option value="OWLP">Odpływ przyścienny + ściana lewa i prawa</option>
+    <option value="O.BLACK">Odpływ klasyczny czarny</option>
+    <option value="OW.BLACK">Odpływ przyścienny czarny</option>
+    <option value="OWL.BLACK">Odpływ przyścienny + ściana lewa czarny</option>
+    <option value="OWP.BLACK">Odpływ przyścienny + ściana prawa czarny</option>
+    <option value="OWLP.BLACK">Odpływ przyścienny + ściana lewa i prawa czarny</option>
+    <option value="O.GOLD">Odpływ klasyczny złoty PVD</option>              
+    <option value="OW.GOLD">Odpływ przyścienny złoty PVD</option>
+    <option value="OWL.GOLD">Odpływ przyścienny + ściana lewa złoty PVD</option>
+    <option value="OWP.GOLD">Odpływ przyścienny + ściana prawa złoty PVD</option>
+    <option value="OWLP.GOLD">Odpływ przyścienny + ściana lewa i prawa złoty PVD</option>
+    <option value="O.COPPER">Odpływ klasyczny miedź PVD</option>              
+    <option value="OW.COPPER">Odpływ przyścienny miedź PVD</option>
+    <option value="OWL.COPPER">Odpływ przyścienny + ściana lewa miedź PVD</option>
+    <option value="OWP.COPPER">Odpływ przyścienny + ściana prawa miedź PVD</option>
+    <option value="OWLP.COPPER">Odpływ przyścienny + ściana lewa i prawa miedź PVD</option>
+</select>
+
+<script>
+    const select = document.getElementById('option');
+    const options = select.options;
+
+    for (let i = 0; i < options.length; i++) {
+        const val = options[i].value;
+        if (val.includes('COPPER')) {
+            options[i].style.backgroundColor = 'rgb(184, 115, 51)'; // Copper kolor
+            options[i].style.color = 'white';
+        } else if (val.includes('GOLD')) {
+            options[i].style.backgroundColor = 'gold';
+            options[i].style.color = 'black';
+        } else if (val.includes('BLACK')) {
+            options[i].style.backgroundColor = 'black';
+            options[i].style.color = 'white';
+        } else {
+            options[i].style.backgroundColor = '#ccc'; // Szary dla reszty
+            options[i].style.color = 'black';
+        }
+    }
+</script>
+
 
             <label for="length">Długość odpływu (L) w cm:</label>
             <input type="number" id="length" name="length" required oninput="validateLength()">
@@ -254,14 +288,13 @@
             
             let maxLength = 600; 
             
-            if (option === 'OW' || option === 'O.BLACK' || option === 'OW.BLACK' || option === 'OWL' || option === 'OWP' || option === 'OWLP') {
-                maxLength = 195; 
-            } else if (option === 'O.GOLD') {
-                maxLength = 120; 
-            } else if (option === 'OW.GOLD') {
-                maxLength = 150;  // Długość maksymalna dla modelu "OW.GOLD"
-            }
-            
+            if (option === 'OW' || option === 'O.BLACK' || option === 'OW.BLACK' || option === 'OWL' || option === 'OWP' || option === 'OWLP' || option === 'OWL.BLACK' || option === 'OWP.BLACK' || option === 'OWLP.BLACK') {
+                maxLength = 195;
+            } else if (option === 'O.GOLD' || option === 'OW.GOLD' || option === 'OWL.GOLD' || option === 'OWP.GOLD' || option === 'OWLP.GOLD') {
+                maxLength = 120;
+            } else if (option === 'O.COPPER' || option === 'OW.COPPER' || option === 'OWL.COPPER' || option === 'OWP.COPPER' || option === 'OWLP.COPPER') {
+                maxLength = 120;
+            }         
             lengthInput.max = maxLength;
             lengthInput.placeholder = `Min: 50 cm, Max: ${maxLength} cm`;
 
@@ -278,13 +311,13 @@
             const errorMessage = document.getElementById('error');
             
             let maxLength = 600;
-            if (option === 'OW' || option === 'O.BLACK' || option === 'OW.BLACK' || option === 'OWL' || option === 'OWP' || option === 'OWLP') {
+            if (option === 'OW' || option === 'O.BLACK' || option === 'OW.BLACK' || option === 'OWL' || option === 'OWP' || option === 'OWLP' || option === 'OWL.BLACK' || option === 'OWP.BLACK' || option === 'OWLP.BLACK') {
                 maxLength = 195;
-            } else if (option === 'O.GOLD') {
+            } else if (option === 'O.GOLD' || option === 'OW.GOLD' || option === 'OWL.GOLD' || option === 'OWP.GOLD' || option === 'OWLP.GOLD') {
                 maxLength = 120;
-            } else if (option === 'OW.GOLD') {
-                maxLength = 150; // Długość maksymalna dla modelu "OW.GOLD"
-            }
+            } else if (option === 'O.COPPER' || option === 'OW.COPPER' || option === 'OWL.COPPER' || option === 'OWP.COPPER' || option === 'OWLP.COPPER') {
+                maxLength = 120;
+            } 
 
             if (length < 50 || length > maxLength) {
                 errorMessage.innerText = `Długość musi być pomiędzy 50 a ${maxLength} cm.`;
@@ -590,20 +623,20 @@ for (let i = 0; i < shifts.length; i++) {
     existingVerticalLines.forEach(line => line.remove()); // Usuwamy wszystkie poprzednie pionowe linie
 
     // Dodajemy czarną linię na górnej krawędzi w przypadku odpowiednich modeli
-    if (['OW', 'OW.BLACK', 'OW.GOLD', 'OWL', 'OWP', 'OWLP'].includes(option)) {
+    if (['OW', 'OW.BLACK', 'OW.GOLD', 'OW.COPPER', 'OWL', 'OWP', 'OWLP', 'OWL.BLACK', 'OWP.BLACK', 'OWLP.BLACK', 'OWL.GOLD', 'OWP.GOLD', 'OWLP.GOLD', 'OWL.COPPER', 'OWP.COPPER', 'OWLP.COPPER'].includes(option)) {
         const pipeLine = document.createElement('div');
         pipeLine.classList.add('pipe-line');
         pipe.appendChild(pipeLine);
     }
 
-    // Dodajemy pionowe linie dla OWL, OWP, OWLP
-    if (option === 'OWL' || option === 'OWLP') {
+    // Dodajemy pionowe linie dla odpowiednich modeli
+    if (option === 'OWL' || option === 'OWLP' || option === 'OWL.BLACK' || option === 'OWLP.BLACK' || option === 'OWL.GOLD' || option === 'OWLP.GOLD' || option === 'OWL.COPPER' || option === 'OWLP.COPPER') {
         const leftVerticalLine = document.createElement('div');
         leftVerticalLine.classList.add('pipe-vertical-line');
         leftVerticalLine.style.left = '0'; // Lewej krawędzi
         pipe.appendChild(leftVerticalLine);
     }
-    if (option === 'OWP' || option === 'OWLP') {
+    if (option === 'OWP' || option === 'OWLP' || option === 'OWP.BLACK' || option === 'OWLP.BLACK' || option === 'OWP.GOLD' || option === 'OWLP.GOLD' || option === 'OWP.COPPER' || option === 'OWLP.COPPER') {
         const rightVerticalLine = document.createElement('div');
         rightVerticalLine.classList.add('pipe-vertical-line');
         rightVerticalLine.style.right = '0'; // Prawej krawędzi
@@ -727,35 +760,42 @@ for (let i = 0; i < shifts.length; i++) {
             break;
         case 'OW':
         case 'O.BLACK':
-            pricePer100cm = 1100;
-            break;
-        case 'OW.BLACK':
-            pricePer100cm = 1200;
-            break;
-        case 'O.GOLD':
-            pricePer100cm = 1300;
-            break;
-        case 'OW.GOLD':
-            pricePer100cm = 1500;
-            break;
         case 'OWL':
-            pricePer100cm = 1100;
-            break;
         case 'OWP':
-            pricePer100cm = 1100;
-            break;
         case 'OWLP':
             pricePer100cm = 1100;
             break;
+        case 'OW.BLACK':
+        case 'OWL.BLACK':
+        case 'OWP.BLACK':
+        case 'OWLP.BLACK':
+            pricePer100cm = 1200;
+            break;
+        case 'O.GOLD':
+        case 'O.COPPER':
+            pricePer100cm = 1300;
+            break;
+        case 'OW.GOLD':
+        case 'OWL.GOLD':
+        case 'OWP.GOLD':
+        case 'OWLP.GOLD':
+        case 'OW.COPPER':
+        case 'OWL.COPPER':
+        case 'OWP.COPPER':
+        case 'OWLP.COPPER':
+            pricePer100cm = 1500;
+            break;
+
     }
 
-    let price = (length / 1000) * pricePer100cm;
-    if (price < 900) {
-        price = 900;
+	let price = (length / 1000) * pricePer100cm;
+	if (price < pricePer100cm) {
+	    price = pricePer100cm;
     }
 
     document.getElementById('price').innerText = 'Cena brutto: ' + price.toFixed(2) + ' PLN';
 }
+
 // Funkcja do kopiowania tekstu do schowka
 function copyToClipboard() {
     const indexElement = document.getElementById('indexResult');
@@ -782,7 +822,6 @@ document.addEventListener('DOMContentLoaded', function() {
         indexElement.addEventListener('click', copyToClipboard);
     }
 });
-
 
 
     
