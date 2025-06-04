@@ -402,10 +402,10 @@ function updateMaxShift() {
         shiftInput.value = '';
     } else {
         shiftInput.disabled = false;
-        const maxShift = Math.max(length - 12, 12); 
+        const maxShift = Math.max(length - 14, 14); 
         shiftInput.max = maxShift;
-        shiftInput.min = 12;
-        shiftInput.placeholder = `Min: 12 cm, Max: ${maxShift} cm`;
+        shiftInput.min = 14;
+        shiftInput.placeholder = `Min: 14 cm, Max: ${maxShift} cm`;
     }
     updateMaxShift2();  // Zaktualizuj również parametr dla drugiego ć
 }
@@ -420,10 +420,10 @@ function updateMaxShift2() {
         shiftInput2.value = '';
     } else {
         shiftInput2.disabled = false;
-        const maxShift2 = Math.max(length - 12, 12); 
+        const maxShift2 = Math.max(length - 14, 14); 
         shiftInput2.max = maxShift2;
-        shiftInput2.min = 12;
-        shiftInput2.placeholder = `Min: 12 cm, Max: ${maxShift2} cm`;
+        shiftInput2.min = 14;
+        shiftInput2.placeholder = `Min: 14 cm, Max: ${maxShift2} cm`;
     }
    updateMaxShift3();
 }
@@ -439,10 +439,10 @@ function updateMaxShift3() {
         shiftInput3.value = '';
     } else {
         shiftInput3.disabled = false;
-        const maxShift3 = Math.max(length - 12, 12); 
+        const maxShift3 = Math.max(length - 14, 14); 
         shiftInput3.max = maxShift3;
-        shiftInput3.min = 12;
-        shiftInput3.placeholder = `Min: 12 cm, Max: ${maxShift3} cm`;
+        shiftInput3.min = 14;
+        shiftInput3.placeholder = `Min: 14 cm, Max: ${maxShift3} cm`;
     }
 }
 
@@ -457,9 +457,9 @@ function calculateProject() {
     let shift2 = document.getElementById('shift2').value;
     const referenceEdge3 = document.getElementById('referenceEdge3').value;
     let shift3 = document.getElementById('shift3').value;
-    const maxShift = length - 12;
-    const maxShift2 = length - 12;
-    const maxShift3 = length - 12;
+    const maxShift = length - 14;
+    const maxShift2 = length - 14;
+    const maxShift3 = length - 14;
 
     // Funkcja do kasowania indeksu i ceny w przypadku błędu
     function clearResults() {
@@ -477,8 +477,8 @@ function calculateProject() {
 // Walidacja pierwszego syfonu (pozycja none odpowiada centralnej pozycji)
 if (referenceEdge === 'none') {
     shift = length / 2; // Ustawiamy syfon w środkowej pozycji
-} else if (shift === '' || shift < 12 || shift > maxShift) {
-    setError(`Wartość przesunięcia pierwszego syfonu musi być pomiędzy 12 a ${maxShift} cm.`);
+} else if (shift === '' || shift < 14 || shift > maxShift) {
+    setError(`Wartość przesunięcia pierwszego syfonu musi być pomiędzy 14 a ${maxShift} cm.`);
     return;
 } else {
     document.getElementById('error').innerText = '';
@@ -501,8 +501,8 @@ if (shift === 'none') {
 
 // Walidacja drugiego syfonu
 if (referenceEdge2 !== 'none') {
-    if (shift2 === '' || shift2 > maxShift2 || shift2 < 12) {
-        setError(`Wartość przesunięcia drugiego syfonu musi być pomiędzy 12 a ${maxShift2} cm.`);
+    if (shift2 === '' || shift2 > maxShift2 || shift2 < 14) {
+        setError(`Wartość przesunięcia drugiego syfonu musi być pomiędzy 14 a ${maxShift2} cm.`);
         return;
     }
 
@@ -527,8 +527,8 @@ if (referenceEdge2 !== 'none') {
 
 // Walidacja trzeciego syfonu
 if (referenceEdge3 !== 'none') {
-    if (shift3 === '' || shift3 > maxShift3 || shift3 < 12) {
-        setError(`Wartość przesunięcia trzeciego syfonu musi być pomiędzy 12 a ${maxShift3} cm.`);
+    if (shift3 === '' || shift3 > maxShift3 || shift3 < 14) {
+        setError(`Wartość przesunięcia trzeciego syfonu musi być pomiędzy 14 a ${maxShift3} cm.`);
         return;
     }
 
